@@ -3,7 +3,8 @@ import { Check, X, Users, BarChart3, TrendingUp, AlertCircle } from 'lucide-reac
 import axios from 'axios';
 
 // Configure axios base URL
-const API_BASE_URL = 'http://localhost:5000/api';
+// const API_BASE_URL = 'http://localhost:5000/api';
+const API_BASE_URL = 'https://card-backend.vercel.app/api';
 axios.defaults.baseURL = API_BASE_URL;
 
 const VotingCard = ({ user, index, onSubmit, hasVoted }) => {
@@ -437,8 +438,8 @@ const VotingApp = () => {
       {/* Header */}
       <div className="container mx-auto px-4 pt-12 pb-8">
         <div className="text-center mb-12">
-          <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-r from-blue-500 to-purple-600 rounded-2xl mb-6">
-            <BarChart3 className="text-white" size={32} />
+          <div className="inline-flex items-center justify-center w-32 h-32  rounded-2xl mb-6">
+           <img src="https://iub.ac.bd/meta_logo.png" alt="" />
           </div>
           <h1 className="text-4xl font-bold bg-gradient-to-r from-gray-800 to-gray-600 bg-clip-text text-transparent mb-4">
             CARD 2025
