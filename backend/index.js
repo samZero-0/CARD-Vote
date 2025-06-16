@@ -3,7 +3,7 @@ const app = express();
 const cors = require("cors");
 const dotenv = require("dotenv");
 const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
-const fetch = require('node-fetch');
+
 
 dotenv.config();    
 const port = process.env.PORT || 5000;
@@ -23,9 +23,9 @@ const client = new MongoClient(uri, {
 
 async function run() {
     try {
-        const database = client.db('Assignment-10');
-        const equipmentCollection = database.collection('equipments');
-        const votesCollection = database.collection('votes'); // New collection for votes
+        const database = client.db('CARD');
+        
+        const votesCollection = database.collection('Votes'); 
 
         // Create index for votes collection
         await votesCollection.createIndex({ userId: 1 });
@@ -103,8 +103,3 @@ app.listen(port, () => {
     console.log(`Server is running on port: ${port}`);
 });
 
-// Graceful shutdown
-process.on('SIGINT', async () => {
-    await client.close();
-    process.exit();
-});
