@@ -5,12 +5,12 @@ import AuthLayout from "../layout/AuthLayout";
 
 const router = createBrowserRouter([
     {
-        path: "/",
+        path: "/home",
         element: <Home />,
        
     },
     {
-        path: 'auth',
+        path: '/',
         element: <AuthLayout />,
         children: [
             {

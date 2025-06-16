@@ -34,7 +34,7 @@ const Login = () => {
                 };
     
                 try {
-                    const response = await fetch('https://card-backend.vercel.app/users', {
+                    const response = await fetch('http://localhost:5000/users', {
                         method: 'POST',
                         headers: {
                             'content-type': 'application/json'
@@ -46,7 +46,7 @@ const Login = () => {
                         setUser(loggedUser);
                         setSuccess(true);
                         toast.success('Signed in successfully with Google!');
-                        navigate(location?.state ? location.state : "/");
+                        navigate(location?.state ? location.state : "/home");
                     } else {
                         const errorData = await response.json();
                         setError(errorData.message || 'Failed to save user data');
