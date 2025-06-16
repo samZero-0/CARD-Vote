@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { Check, X, Users, BarChart3, TrendingUp } from 'lucide-react';
 
-const VotingCard = ({ user, index }) => {
+const VotingCard = ({ user, index, onSubmit }) => {
   const [vote, setVote] = useState(null);
   const [likertScale, setLikertScale] = useState(null);
   const [isAnimating, setIsAnimating] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleVote = (choice) => {
     setIsAnimating(true);
@@ -15,6 +16,17 @@ const VotingCard = ({ user, index }) => {
 
   const handleLikertChange = (value) => {
     setLikertScale(value);
+  };
+
+  const handleSubmit = async () => {
+    if (!vote || !likertScale) return;
+    
+    setIsSubmitting(true);
+    
+    // Simulate API call delay
+    setTimeout(() => {
+      onSubmit(user.id, { vote, intensity: likertScale });
+    }, 800);
   };
 
   const getIntensityColor = (value, voteType) => {
@@ -149,11 +161,12 @@ const VotingCard = ({ user, index }) => {
                 <button
                   key={value}
                   onClick={() => handleLikertChange(value)}
+                  disabled={isSubmitting}
                   className={`relative overflow-hidden py-4 px-3 rounded-xl font-medium transition-all duration-300 transform hover:scale-105 active:scale-95 ${
                     likertScale === value
                       ? `bg-gradient-to-r ${getIntensityColor(value, vote)} text-white shadow-lg`
                       : 'bg-gray-50 text-gray-700 hover:bg-gray-100 hover:shadow-md'
-                  }`}
+                  } ${isSubmitting ? 'opacity-50 cursor-not-allowed' : ''}`}
                 >
                   <div className="relative z-10 text-center">
                     <div className={`text-2xl font-bold mb-1 ${
@@ -184,6 +197,31 @@ const VotingCard = ({ user, index }) => {
                   )}
                 </button>
               ))}
+            </div>
+            
+            {/* Submit Button */}
+            <div className="mt-6 pt-4 border-t border-gray-100">
+              <button
+                onClick={handleSubmit}
+                disabled={!vote || !likertScale || isSubmitting}
+                className={`w-full py-4 px-6 rounded-xl font-semibold transition-all duration-300 transform ${
+                  !vote || !likertScale || isSubmitting
+                    ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                    : 'bg-gradient-to-r from-blue-500 to-purple-600 text-white hover:from-blue-600 hover:to-purple-700 hover:scale-105 active:scale-95 shadow-lg hover:shadow-xl'
+                }`}
+              >
+                {isSubmitting ? (
+                  <div className="flex items-center justify-center space-x-2">
+                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                    <span>Submitting...</span>
+                  </div>
+                ) : (
+                  <div className="flex items-center justify-center space-x-2">
+                    <Check size={18} />
+                    <span>Submit Vote</span>
+                  </div>
+                )}
+              </button>
             </div>
           </div>
         )}
@@ -246,6 +284,16 @@ const dummyUsers = [
 
 const VotingApp = () => {
   const [mounted, setMounted] = useState(false);
+  const [submittedUsers, setSubmittedUsers] = useState(new Set());
+  const [totalVotes, setTotalVotes] = useState(0);
+
+  const handleUserSubmit = (userId, voteData) => {
+    setSubmittedUsers(prev => new Set([...prev, userId]));
+    setTotalVotes(prev => prev + 1);
+  };
+
+  const visibleUsers = dummyUsers.filter(user => !submittedUsers.has(user.id));
+  const completionPercentage = Math.round((totalVotes / dummyUsers.length) * 100);
 
   useEffect(() => {
     setMounted(true);
@@ -273,11 +321,11 @@ const VotingApp = () => {
               <div className="text-sm text-gray-500">Team Members</div>
             </div>
             <div className="text-center">
-              <div className="text-3xl font-bold text-green-600">0</div>
+              <div className="text-3xl font-bold text-green-600">{totalVotes}</div>
               <div className="text-sm text-gray-500">Votes Cast</div>
             </div>
             <div className="text-center">
-              <div className="text-3xl font-bold text-purple-600">0%</div>
+              <div className="text-3xl font-bold text-purple-600">{completionPercentage}%</div>
               <div className="text-sm text-gray-500">Completion</div>
             </div>
           </div>
@@ -286,13 +334,29 @@ const VotingApp = () => {
 
       {/* Voting Cards */}
       <div className="container mx-auto px-4 pb-12">
-        <div className={`grid gap-8 transition-all duration-1000 ${
-          mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
-        }`}>
-          {dummyUsers.map((user, index) => (
-            <VotingCard key={user.id} user={user} index={index} />
-          ))}
-        </div>
+        {visibleUsers.length > 0 ? (
+          <div className={`grid gap-8 transition-all duration-1000 ${
+            mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
+          }`}>
+            {visibleUsers.map((user, index) => (
+              <VotingCard key={user.id} user={user} index={index} onSubmit={handleUserSubmit} />
+            ))}
+          </div>
+        ) : (
+          <div className="text-center py-16">
+            <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-r from-green-400 to-emerald-500 rounded-full mb-6">
+              <Check className="text-white" size={40} />
+            </div>
+            <h2 className="text-3xl font-bold text-gray-800 mb-4">All Votes Submitted!</h2>
+            <p className="text-gray-600 text-lg max-w-md mx-auto">
+              Thank you to all team members for participating. Your collective input has been recorded.
+            </p>
+            <div className="mt-8 p-6 bg-gradient-to-r from-green-50 to-emerald-50 rounded-2xl max-w-md mx-auto">
+              <div className="text-2xl font-bold text-green-600 mb-2">{totalVotes} / {dummyUsers.length}</div>
+              <div className="text-sm text-green-700">Votes Successfully Collected</div>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Footer */}
