@@ -153,43 +153,49 @@ async function run() {
 
         // ========== VOTING ENDPOINTS ========== //
         app.post('/api/votes', async (req, res) => {
-            try {
-                const { userId, userName, vote, intensity } = req.body;
+    try {
+        const { userId, userName, userEmail, vote, intensity } = req.body;
 
-                if (!userId || !userName || !vote || !intensity) {
-                    return res.status(400).json({ message: 'All fields are required' });
-                }
+        if (!userId || !userName || !userEmail || !vote || !intensity) {
+            return res.status(400).json({ message: 'All fields are required' });
+        }
 
-                // Check if user exists
-                const user = await usersCollection.findOne({ uid: userId });
-                if (!user) {
-                    return res.status(404).json({ message: 'User not found' });
-                }
+        // Check if user exists
+        const user = await usersCollection.findOne({ uid: userId });
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
 
-                // Check if user has already voted
-                const existingVote = await votesCollection.findOne({ userId });
-                if (existingVote) {
-                    return res.status(409).json({ message: 'User has already voted' });
-                }
-
-                const newVote = {
-                    userId,
-                    userName,
-                    vote,
-                    intensity,
-                    timestamp: new Date()
-                };
-
-                const result = await votesCollection.insertOne(newVote);
-                res.status(201).json({
-                    message: 'Vote submitted successfully',
-                    voteId: result.insertedId
-                });
-            } catch (err) {
-                console.error('Vote submission error:', err);
-                res.status(500).json({ message: 'Server error' });
-            }
+        // Check if user has already voted for this participant
+        const existingVote = await votesCollection.findOne({ 
+            voterId: userId,
+            participantId: req.body.participantId // Add this to your request body
         });
+        if (existingVote) {
+            return res.status(409).json({ message: 'User has already voted for this participant' });
+        }
+
+        const newVote = {
+            voterId: userId,
+            voterName: userName,
+            voterEmail: userEmail,
+            participantId: req.body.participantId,
+            participantName: req.body.participantName,
+            vote,
+            intensity,
+            timestamp: new Date()
+        };
+
+        const result = await votesCollection.insertOne(newVote);
+        res.status(201).json({
+            message: 'Vote submitted successfully',
+            voteId: result.insertedId
+        });
+    } catch (err) {
+        console.error('Vote submission error:', err);
+        res.status(500).json({ message: 'Server error' });
+    }
+});
 
         app.get('/api/votes', async (req, res) => {
             try {
@@ -202,22 +208,91 @@ async function run() {
             }
         });
 
-        app.get('/api/votes/:userId', async (req, res) => {
-            try {
-                const userId = req.params.userId;
-                const query = { userId };
-                const vote = await votesCollection.findOne(query);
-                
-                if (!vote) {
-                    return res.status(404).json({ message: 'No vote found for this user' });
-                }
-                
-                res.json(vote);
-            } catch (err) {
-                console.error('Error fetching user vote:', err);
-                res.status(500).json({ message: 'Server error' });
-            }
-        });
+        app.get('/api/votes/user/:userId', async (req, res) => {
+    try {
+        const userId = req.params.userId;
+        const votes = await votesCollection.find({ voterId: userId }).toArray();
+        res.json(votes);
+    } catch (err) {
+        console.error('Error fetching user votes:', err);
+        res.status(500).json({ message: 'Server error' });
+    }
+});
+
+    
+// New endpoint to get participants the user hasn't voted for
+app.get('/api/participants/available/:userId', async (req, res) => {
+    try {
+        const userId = req.params.userId;
+        
+        // Get all participants (you might want to store these in a separate collection)
+        const allParticipants = [
+            {
+    id: 1,
+    name: 'John Doe',
+    role: 'Software Engineer',
+    avatar: 'https://randomuser.me/api/portraits/men/1.jpg'
+  },
+  {
+    id: 2,
+    name: 'Jane Smith',
+    role: 'Product Manager',
+    avatar: 'https://randomuser.me/api/portraits/women/2.jpg'
+  },
+  {
+    id: 3,
+    name: 'Robert Johnson',
+    role: 'UX Designer',
+    avatar: 'https://randomuser.me/api/portraits/men/3.jpg'
+  },
+  {
+    id: 4,
+    name: 'Emily Davis',
+    role: 'Data Scientist',
+    avatar: 'https://randomuser.me/api/portraits/women/4.jpg'
+  },
+  {
+    id: 5,
+    name: 'Michael Wilson',
+    role: 'DevOps Engineer',
+    avatar: 'https://randomuser.me/api/portraits/men/5.jpg'
+  },
+  {
+    id: 6,
+    name: 'Sarah Brown',
+    role: 'Frontend Developer',
+    avatar: 'https://randomuser.me/api/portraits/women/6.jpg'
+  },
+  {
+    id: 7,
+    name: 'David Taylor',
+    role: 'Backend Developer',
+    avatar: 'https://randomuser.me/api/portraits/men/7.jpg'
+  },
+  {
+    id: 8,
+    name: 'Jessica Martinez',
+    role: 'QA Engineer',
+    avatar: 'https://randomuser.me/api/portraits/women/8.jpg'
+  }
+            
+        ];
+
+        // Get votes by this user
+        const userVotes = await votesCollection.find({ voterId: userId }).toArray();
+        const votedParticipantIds = userVotes.map(vote => vote.participantId);
+
+        // Filter out participants the user has already voted for
+        const availableParticipants = allParticipants.filter(
+            participant => !votedParticipantIds.includes(participant.id)
+        );
+
+        res.json(availableParticipants);
+    } catch (err) {
+        console.error('Error fetching available participants:', err);
+        res.status(500).json({ message: 'Server error' });
+    }
+});
 
         // ========== ADMIN ENDPOINTS ========== //
         app.get('/api/admin/stats', async (req, res) => {
