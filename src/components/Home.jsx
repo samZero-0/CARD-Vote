@@ -1,9 +1,8 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { Check, X, Users, BarChart3, TrendingUp, AlertCircle } from 'lucide-react';
 import axios from 'axios';
-import { AuthContext } from '../provider/AuthProvider'; // Assuming you have an AuthContext provider
+import { AuthContext } from '../provider/AuthProvider';
 
-// Configure axios base URL
 const API_BASE_URL = 'http://localhost:5000/api';
 // const API_BASE_URL = 'https://card-backend.vercel.app/api';
 axios.defaults.baseURL = API_BASE_URL;
@@ -20,7 +19,6 @@ const VotingCard = ({ participant, index, onSubmit, hasVoted, currentUser }) => 
     setVote(choice);
     setLikertScale(null);
     setError(null);
-    // For "no" votes, automatically set likert to 1 (straight no)
     if (choice === 'no') {
       setLikertScale(1);
     }
@@ -40,9 +38,9 @@ const VotingCard = ({ participant, index, onSubmit, hasVoted, currentUser }) => 
     
     try {
       const voteData = {
-        userId: currentUser.uid,
-        userName: currentUser.displayName || currentUser.name,
-        userEmail: currentUser.email,
+        voterId: currentUser.uid,
+        voterName: currentUser.displayName || currentUser.name,
+        voterEmail: currentUser.email,
         participantId: participant.id,
         participantName: participant.name,
         vote,
@@ -52,7 +50,6 @@ const VotingCard = ({ participant, index, onSubmit, hasVoted, currentUser }) => 
       const response = await axios.post('/votes', voteData);
       
       if (response.status === 201) {
-        // Simulate a brief delay for UX
         setTimeout(() => {
           onSubmit(participant.id, { vote, intensity: likertScale });
         }, 500);
@@ -76,7 +73,6 @@ const VotingCard = ({ participant, index, onSubmit, hasVoted, currentUser }) => 
     }
   };
 
-  // Don't render if user has already voted
   if (hasVoted) return null;
 
   return (
@@ -84,10 +80,8 @@ const VotingCard = ({ participant, index, onSubmit, hasVoted, currentUser }) => 
       className="group relative bg-white shadow-xl rounded-2xl overflow-hidden transition-all duration-500 hover:shadow-2xl hover:-translate-y-1"
       style={{ animationDelay: `${index * 100}ms` }}
     >
-      {/* Gradient overlay */}
       <div className="absolute inset-0 bg-gradient-to-br from-blue-50/50 to-purple-50/50 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
       
-      {/* Vote indicator ribbon */}
       {vote && (
         <div className={`absolute top-0 right-0 w-16 h-16 ${
           vote === 'yes' ? 'bg-gradient-to-br from-green-400 to-emerald-500' : 'bg-gradient-to-br from-red-400 to-rose-500'
@@ -121,7 +115,6 @@ const VotingCard = ({ participant, index, onSubmit, hasVoted, currentUser }) => 
             </div>
           </div>
           
-          {/* Status indicator */}
           <div className="flex flex-col items-center">
             {vote && likertScale ? (
               <div className="flex flex-col items-center">
@@ -152,7 +145,6 @@ const VotingCard = ({ participant, index, onSubmit, hasVoted, currentUser }) => 
           </div>
         </div>
         
-        {/* Error Display */}
         {error && (
           <div className="mx-8 mb-4 p-4 bg-red-50 border border-red-200 rounded-lg">
             <div className="flex items-center space-x-2 text-red-600">
@@ -229,7 +221,6 @@ const VotingCard = ({ participant, index, onSubmit, hasVoted, currentUser }) => 
                     </div>
                   </div>
                   
-                  {/* Animated background effect */}
                   {likertScale === value && (
                     <div className="absolute inset-0 bg-white opacity-20 animate-pulse"></div>
                   )}
@@ -237,7 +228,6 @@ const VotingCard = ({ participant, index, onSubmit, hasVoted, currentUser }) => 
               ))}
             </div>
             
-            {/* Submit Button */}
             <div className="mt-6 pt-4 border-t border-gray-100">
               <button
                 onClick={handleSubmit}
@@ -278,7 +268,6 @@ const VotingCard = ({ participant, index, onSubmit, hasVoted, currentUser }) => 
               </p>
             </div>
             
-            {/* Submit Button for No */}
             <div className="mt-4">
               <button
                 onClick={handleSubmit}
@@ -319,23 +308,21 @@ const Home = () => {
   
   const { user: authUser, loading: authLoading } = useContext(AuthContext);
 
-  // Save user to backend when authenticated
   const saveUserToBackend = async (user) => {
     try {
       const userData = {
         name: user.displayName || user.name,
         email: user.email,
         photo: user.photoURL || null,
-        role: "student", // Default role
+        role: "student",
         uid: user.uid
       };
 
       await axios.post('/users', userData, {
-        baseURL: 'https://card-backend.vercel.app' // Direct call to users endpoint
+        baseURL: 'http://localhost:5000'
       });
     } catch (error) {
       console.error('Error saving user to backend:', error);
-      // Don't block the app if user save fails
     }
   };
 
@@ -346,17 +333,14 @@ const Home = () => {
       setLoading(true);
       setError(null);
       
-      // Fetch available participants (those the user hasn't voted for)
       const response = await axios.get(`/participants/available/${authUser.uid}`);
       const participants = response.data;
       
       setAvailableParticipants(participants);
       
-      // Fetch user's votes to get count
       const userVotesResponse = await axios.get(`/votes/user/${authUser.uid}`);
       const userVotes = userVotesResponse.data;
       
-      // Get IDs of participants the user has voted for
       const votedIds = new Set(userVotes.map(vote => vote.participantId));
       setVotedParticipants(votedIds);
       setTotalVotes(userVotes.length);
@@ -370,11 +354,8 @@ const Home = () => {
   };
 
   const handleUserSubmit = (participantId, voteData) => {
-    // Update local state to reflect the vote
     setVotedParticipants(prev => new Set([...prev, participantId]));
     setTotalVotes(prev => prev + 1);
-    
-    // Remove participant from available list
     setAvailableParticipants(prev => 
       prev.filter(participant => participant.id !== participantId)
     );
@@ -386,9 +367,7 @@ const Home = () => {
 
   useEffect(() => {
     if (!authLoading && authUser) {
-      // Save user to backend first
       saveUserToBackend(authUser).then(() => {
-        // Then fetch available participants
         fetchAvailableParticipants();
       });
     } else if (!authLoading && !authUser) {
@@ -396,7 +375,7 @@ const Home = () => {
     }
   }, [authLoading, authUser]);
 
-  const totalParticipants = 8; // Based on the hardcoded list in backend
+  const totalParticipants = 8;
   const completionPercentage = Math.round((totalVotes / totalParticipants) * 100);
 
   if (authLoading || loading) {
@@ -420,7 +399,7 @@ const Home = () => {
           <h2 className="text-2xl font-bold text-gray-800 mb-4">Authentication Required</h2>
           <p className="text-gray-600 mb-6">Please sign in to access the voting system.</p>
           <button
-            onClick={() => window.location.href = '/login'} // Adjust based on your auth flow
+            onClick={() => window.location.href = '/login'}
             className="bg-gradient-to-r from-blue-500 to-purple-600 text-white px-6 py-3 rounded-lg font-semibold hover:from-blue-600 hover:to-purple-700 transition-all duration-300"
           >
             Sign In
@@ -452,7 +431,6 @@ const Home = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
-      {/* Header */}
       <div className="container mx-auto px-4 pt-12 pb-8">
         <div className="text-center mb-12">
           <div className="inline-flex items-center justify-center w-32 h-32 rounded-2xl mb-6">
@@ -465,7 +443,6 @@ const Home = () => {
              3 Minute Thesis Voting
           </p>
           
-          {/* User info and progress */}
           <div className="mt-6 flex flex-col items-center space-y-4">
             <div className="flex items-center justify-center space-x-4">
               <div className="flex items-center space-x-2 bg-white/80 backdrop-blur-sm px-4 py-2 rounded-full shadow-sm">
@@ -478,7 +455,6 @@ const Home = () => {
               </div>
             </div>
             
-            {/* Progress indicator */}
             <div className="bg-white/80 backdrop-blur-sm px-6 py-3 rounded-full shadow-sm">
               <div className="flex items-center space-x-3">
                 <span className="text-sm font-medium text-gray-600">Your Progress:</span>
@@ -496,7 +472,6 @@ const Home = () => {
         </div>
       </div>
 
-      {/* Voting Cards */}
       <div className="container mx-auto px-4 pb-12">
         {availableParticipants.length > 0 ? (
           <div className={`grid gap-8 transition-all duration-1000 ${
@@ -530,7 +505,6 @@ const Home = () => {
         )}
       </div>
 
-      {/* Footer */}
       <div className="bg-white/50 backdrop-blur-sm border-t border-gray-200">
         <div className="container mx-auto px-4 py-8">
           <div className="flex items-center justify-center space-x-2 text-gray-500">
