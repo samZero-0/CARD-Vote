@@ -1,13 +1,13 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { Check, X, Users, BarChart3, TrendingUp, AlertCircle } from 'lucide-react';
 import axios from 'axios';
+import { AuthContext } from '../provider/AuthProvider';
 
-// Configure axios base URL
-// const API_BASE_URL = 'http://localhost:5000/api';
-const API_BASE_URL = 'https://card-backend.vercel.app/api';
+const API_BASE_URL = 'http://localhost:5000/api';
+// const API_BASE_URL = 'https://card-backend.vercel.app/api';
 axios.defaults.baseURL = API_BASE_URL;
 
-const VotingCard = ({ user, index, onSubmit, hasVoted }) => {
+const VotingCard = ({ participant, index, onSubmit, hasVoted, currentUser }) => {
   const [vote, setVote] = useState(null);
   const [likertScale, setLikertScale] = useState(null);
   const [isAnimating, setIsAnimating] = useState(false);
@@ -19,7 +19,6 @@ const VotingCard = ({ user, index, onSubmit, hasVoted }) => {
     setVote(choice);
     setLikertScale(null);
     setError(null);
-    // For "no" votes, automatically set likert to 1 (straight no)
     if (choice === 'no') {
       setLikertScale(1);
     }
@@ -32,15 +31,18 @@ const VotingCard = ({ user, index, onSubmit, hasVoted }) => {
   };
 
   const handleSubmit = async () => {
-    if (!vote || !likertScale) return;
+    if (!vote || !likertScale || !currentUser) return;
     
     setIsSubmitting(true);
     setError(null);
     
     try {
       const voteData = {
-        userId: user.id.toString(),
-        userName: user.name,
+        voterId: currentUser.uid,
+        voterName: currentUser.displayName || currentUser.name,
+        voterEmail: currentUser.email,
+        participantId: participant.id,
+        participantName: participant.name,
         vote,
         intensity: likertScale
       };
@@ -48,9 +50,8 @@ const VotingCard = ({ user, index, onSubmit, hasVoted }) => {
       const response = await axios.post('/votes', voteData);
       
       if (response.status === 201) {
-        // Simulate a brief delay for UX
         setTimeout(() => {
-          onSubmit(user.id, { vote, intensity: likertScale });
+          onSubmit(participant.id, { vote, intensity: likertScale });
         }, 500);
       }
     } catch (error) {
@@ -72,7 +73,6 @@ const VotingCard = ({ user, index, onSubmit, hasVoted }) => {
     }
   };
 
-  // Don't render if user has already voted
   if (hasVoted) return null;
 
   return (
@@ -80,10 +80,8 @@ const VotingCard = ({ user, index, onSubmit, hasVoted }) => {
       className="group relative bg-white shadow-xl rounded-2xl overflow-hidden transition-all duration-500 hover:shadow-2xl hover:-translate-y-1"
       style={{ animationDelay: `${index * 100}ms` }}
     >
-      {/* Gradient overlay */}
       <div className="absolute inset-0 bg-gradient-to-br from-blue-50/50 to-purple-50/50 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
       
-      {/* Vote indicator ribbon */}
       {vote && (
         <div className={`absolute top-0 right-0 w-16 h-16 ${
           vote === 'yes' ? 'bg-gradient-to-br from-green-400 to-emerald-500' : 'bg-gradient-to-br from-red-400 to-rose-500'
@@ -99,8 +97,8 @@ const VotingCard = ({ user, index, onSubmit, hasVoted }) => {
           <div className="relative">
             <img
               className="h-20 w-20 rounded-full object-cover ring-4 ring-white shadow-lg transition-transform duration-300 group-hover:scale-105"
-              src={user.avatar}
-              alt={`${user.name}'s avatar`}
+              src={participant.avatar}
+              alt={`${participant.name}'s avatar`}
             />
             <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center">
               <div className="w-3 h-3 bg-white rounded-full"></div>
@@ -108,16 +106,15 @@ const VotingCard = ({ user, index, onSubmit, hasVoted }) => {
           </div>
           <div className="ml-6 flex-grow">
             <h3 className="text-xl font-bold text-gray-800 group-hover:text-gray-900 transition-colors">
-              {user.name}
+              {participant.name}
             </h3>
-            <p className="text-gray-600 font-medium">{user.role}</p>
+            <p className="text-gray-600 font-medium">{participant.role}</p>
             <div className="flex items-center mt-2 text-sm text-gray-500">
               <Users size={14} className="mr-1" />
-              <span>ID: {user.id}</span>
+              <span>ID: {participant.id}</span>
             </div>
           </div>
           
-          {/* Status indicator */}
           <div className="flex flex-col items-center">
             {vote && likertScale ? (
               <div className="flex flex-col items-center">
@@ -148,7 +145,6 @@ const VotingCard = ({ user, index, onSubmit, hasVoted }) => {
           </div>
         </div>
         
-        {/* Error Display */}
         {error && (
           <div className="mx-8 mb-4 p-4 bg-red-50 border border-red-200 rounded-lg">
             <div className="flex items-center space-x-2 text-red-600">
@@ -225,7 +221,6 @@ const VotingCard = ({ user, index, onSubmit, hasVoted }) => {
                     </div>
                   </div>
                   
-                  {/* Animated background effect */}
                   {likertScale === value && (
                     <div className="absolute inset-0 bg-white opacity-20 animate-pulse"></div>
                   )}
@@ -233,7 +228,6 @@ const VotingCard = ({ user, index, onSubmit, hasVoted }) => {
               ))}
             </div>
             
-            {/* Submit Button */}
             <div className="mt-6 pt-4 border-t border-gray-100">
               <button
                 onClick={handleSubmit}
@@ -274,7 +268,6 @@ const VotingCard = ({ user, index, onSubmit, hasVoted }) => {
               </p>
             </div>
             
-            {/* Submit Button for No */}
             <div className="mt-4">
               <button
                 onClick={handleSubmit}
@@ -305,109 +298,112 @@ const VotingCard = ({ user, index, onSubmit, hasVoted }) => {
   );
 };
 
-// Enhanced dummy data
-const dummyUsers = [
-  {
-    id: 1,
-    name: 'John Doe',
-    role: 'Software Engineer',
-    avatar: 'https://randomuser.me/api/portraits/men/1.jpg'
-  },
-  {
-    id: 2,
-    name: 'Jane Smith',
-    role: 'Product Manager',
-    avatar: 'https://randomuser.me/api/portraits/women/2.jpg'
-  },
-  {
-    id: 3,
-    name: 'Robert Johnson',
-    role: 'UX Designer',
-    avatar: 'https://randomuser.me/api/portraits/men/3.jpg'
-  },
-  {
-    id: 4,
-    name: 'Emily Davis',
-    role: 'Data Scientist',
-    avatar: 'https://randomuser.me/api/portraits/women/4.jpg'
-  },
-  {
-    id: 5,
-    name: 'Michael Wilson',
-    role: 'DevOps Engineer',
-    avatar: 'https://randomuser.me/api/portraits/men/5.jpg'
-  },
-  {
-    id: 6,
-    name: 'Sarah Brown',
-    role: 'Frontend Developer',
-    avatar: 'https://randomuser.me/api/portraits/women/6.jpg'
-  },
-  {
-    id: 7,
-    name: 'David Taylor',
-    role: 'Backend Developer',
-    avatar: 'https://randomuser.me/api/portraits/men/7.jpg'
-  },
-  {
-    id: 8,
-    name: 'Jessica Martinez',
-    role: 'QA Engineer',
-    avatar: 'https://randomuser.me/api/portraits/women/8.jpg'
-  }
-];
-
 const Home = () => {
   const [mounted, setMounted] = useState(false);
-  const [submittedUsers, setSubmittedUsers] = useState(new Set());
+  const [availableParticipants, setAvailableParticipants] = useState([]);
+  const [votedParticipants, setVotedParticipants] = useState(new Set());
   const [totalVotes, setTotalVotes] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  
+  const { user: authUser, loading: authLoading } = useContext(AuthContext);
 
-  // For testing purposes - in production, get this from Firebase Auth
-  const currentUserId = "1"; // This should come from your authentication system
+  const saveUserToBackend = async (user) => {
+    try {
+      const userData = {
+        name: user.displayName || user.name,
+        email: user.email,
+        photo: user.photoURL || null,
+        role: "student",
+        uid: user.uid
+      };
 
-  const checkExistingVotes = async () => {
+      await axios.post('/users', userData, {
+        baseURL: 'http://localhost:5000'
+      });
+    } catch (error) {
+      console.error('Error saving user to backend:', error);
+    }
+  };
+
+  const fetchAvailableParticipants = async () => {
+    if (!authUser) return;
+    
     try {
       setLoading(true);
       setError(null);
       
-      // Get all votes to check which users have already voted
-      const response = await axios.get('/votes');
-      const votes = response.data;
+      const response = await axios.get(`/participants/available/${authUser.uid}`);
+      const participants = response.data;
       
-      // Extract user IDs who have already voted
-      const votedUserIds = new Set(votes.map(vote => parseInt(vote.userId)));
-      setSubmittedUsers(votedUserIds);
-      setTotalVotes(votes.length);
+      setAvailableParticipants(participants);
+      
+      const userVotesResponse = await axios.get(`/votes/user/${authUser.uid}`);
+      const userVotes = userVotesResponse.data;
+      
+      const votedIds = new Set(userVotes.map(vote => vote.participantId));
+      setVotedParticipants(votedIds);
+      setTotalVotes(userVotes.length);
       
     } catch (error) {
-      console.error('Error fetching existing votes:', error);
-      setError('Failed to load voting data. Please refresh the page.');
+      console.error('Error fetching participants:', error);
+      setError('Failed to load participants. Please refresh the page.');
     } finally {
       setLoading(false);
     }
   };
 
-  const handleUserSubmit = (userId, voteData) => {
-    setSubmittedUsers(prev => new Set([...prev, userId]));
+  const handleUserSubmit = (participantId, voteData) => {
+    setVotedParticipants(prev => new Set([...prev, participantId]));
     setTotalVotes(prev => prev + 1);
+    setAvailableParticipants(prev => 
+      prev.filter(participant => participant.id !== participantId)
+    );
   };
 
   useEffect(() => {
     setMounted(true);
-    checkExistingVotes();
   }, []);
 
-  const visibleUsers = dummyUsers.filter(user => !submittedUsers.has(user.id));
-  const completionPercentage = Math.round((totalVotes / dummyUsers.length) * 100);
+  useEffect(() => {
+    if (!authLoading && authUser) {
+      saveUserToBackend(authUser).then(() => {
+        fetchAvailableParticipants();
+      });
+    } else if (!authLoading && !authUser) {
+      setLoading(false);
+    }
+  }, [authLoading, authUser]);
 
-  if (loading) {
+  const totalParticipants = 8;
+  const completionPercentage = Math.round((totalVotes / totalParticipants) * 100);
+
+  if (authLoading || loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 flex items-center justify-center">
         <div className="text-center">
           <div className="w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
           <p className="text-gray-600 text-lg">Loading voting data...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!authUser) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 flex items-center justify-center">
+        <div className="text-center max-w-md mx-auto p-8">
+          <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <AlertCircle className="text-red-600" size={32} />
+          </div>
+          <h2 className="text-2xl font-bold text-gray-800 mb-4">Authentication Required</h2>
+          <p className="text-gray-600 mb-6">Please sign in to access the voting system.</p>
+          <button
+            onClick={() => window.location.href = '/login'}
+            className="bg-gradient-to-r from-blue-500 to-purple-600 text-white px-6 py-3 rounded-lg font-semibold hover:from-blue-600 hover:to-purple-700 transition-all duration-300"
+          >
+            Sign In
+          </button>
         </div>
       </div>
     );
@@ -423,7 +419,7 @@ const Home = () => {
           <h2 className="text-2xl font-bold text-gray-800 mb-4">Connection Error</h2>
           <p className="text-gray-600 mb-6">{error}</p>
           <button
-            onClick={checkExistingVotes}
+            onClick={fetchAvailableParticipants}
             className="bg-gradient-to-r from-blue-500 to-purple-600 text-white px-6 py-3 rounded-lg font-semibold hover:from-blue-600 hover:to-purple-700 transition-all duration-300"
           >
             Try Again
@@ -435,11 +431,10 @@ const Home = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
-      {/* Header */}
       <div className="container mx-auto px-4 pt-12 pb-8">
         <div className="text-center mb-12">
-          <div className="inline-flex items-center justify-center w-32 h-32  rounded-2xl mb-6">
-           <img src="https://iub.ac.bd/meta_logo.png" alt="" />
+          <div className="inline-flex items-center justify-center w-32 h-32 rounded-2xl mb-6">
+           <img src="https://iub.ac.bd/meta_logo.png" alt="IUB Logo" />
           </div>
           <h1 className="text-4xl font-bold bg-gradient-to-r from-gray-800 to-gray-600 bg-clip-text text-transparent mb-4">
             CARD 2025
@@ -448,24 +443,48 @@ const Home = () => {
              3 Minute Thesis Voting
           </p>
           
-          {/* Stats bar */}
-          
+          <div className="mt-6 flex flex-col items-center space-y-4">
+            <div className="flex items-center justify-center space-x-4">
+              <div className="flex items-center space-x-2 bg-white/80 backdrop-blur-sm px-4 py-2 rounded-full shadow-sm">
+                <img 
+                  src={authUser.photoURL || 'https://randomuser.me/api/portraits/men/1.jpg'} 
+                  alt="User avatar" 
+                  className="w-8 h-8 rounded-full"
+                />
+                <span className="font-medium text-gray-700">{authUser.displayName || 'User'}</span>
+              </div>
+            </div>
+            
+            <div className="bg-white/80 backdrop-blur-sm px-6 py-3 rounded-full shadow-sm">
+              <div className="flex items-center space-x-3">
+                <span className="text-sm font-medium text-gray-600">Your Progress:</span>
+                <span className="text-lg font-bold text-blue-600">{totalVotes}/{totalParticipants}</span>
+                <div className="w-24 h-2 bg-gray-200 rounded-full overflow-hidden">
+                  <div 
+                    className="h-full bg-gradient-to-r from-green-400 to-blue-500 transition-all duration-500"
+                    style={{ width: `${completionPercentage}%` }}
+                  ></div>
+                </div>
+                <span className="text-sm font-medium text-gray-600">{completionPercentage}%</span>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
-      {/* Voting Cards */}
       <div className="container mx-auto px-4 pb-12">
-        {visibleUsers.length > 0 ? (
+        {availableParticipants.length > 0 ? (
           <div className={`grid gap-8 transition-all duration-1000 ${
             mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
           }`}>
-            {visibleUsers.map((user, index) => (
+            {availableParticipants.map((participant, index) => (
               <VotingCard 
-                key={user.id} 
-                user={user} 
+                key={participant.id} 
+                participant={participant} 
                 index={index} 
                 onSubmit={handleUserSubmit}
-                hasVoted={submittedUsers.has(user.id)}
+                hasVoted={votedParticipants.has(participant.id)}
+                currentUser={authUser}
               />
             ))}
           </div>
@@ -476,17 +495,16 @@ const Home = () => {
             </div>
             <h2 className="text-3xl font-bold text-gray-800 mb-4">All Votes Submitted!</h2>
             <p className="text-gray-600 text-lg max-w-md mx-auto">
-              Thank you to all team members for participating. Your collective input has been recorded.
+              Thank you for participating in the CARD 2025 - 3 Minute Thesis voting. Your votes have been recorded.
             </p>
             <div className="mt-8 p-6 bg-gradient-to-r from-green-50 to-emerald-50 rounded-2xl max-w-md mx-auto">
-              <div className="text-2xl font-bold text-green-600 mb-2">{totalVotes} / {dummyUsers.length}</div>
-              <div className="text-sm text-green-700">Votes Successfully Collected</div>
+              <div className="text-2xl font-bold text-green-600 mb-2">{totalVotes} / {totalParticipants}</div>
+              <div className="text-sm text-green-700">Votes Successfully Submitted</div>
             </div>
           </div>
         )}
       </div>
 
-      {/* Footer */}
       <div className="bg-white/50 backdrop-blur-sm border-t border-gray-200">
         <div className="container mx-auto px-4 py-8">
           <div className="flex items-center justify-center space-x-2 text-gray-500">
