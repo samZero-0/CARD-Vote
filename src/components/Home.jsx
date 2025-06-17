@@ -3,7 +3,7 @@ import { Check, X, Users, BarChart3, TrendingUp, AlertCircle } from 'lucide-reac
 import axios from 'axios';
 import { AuthContext } from '../provider/AuthProvider';
 
-const API_BASE_URL = 'http://localhost:5000/api';
+const API_BASE_URL = 'https://card-backend-8pxf.onrender.com/api';
 // const API_BASE_URL = 'https://card-backend.vercel.app/api';
 axios.defaults.baseURL = API_BASE_URL;
 
@@ -319,7 +319,7 @@ const Home = () => {
       };
 
       await axios.post('/users', userData, {
-        baseURL: 'http://localhost:5000'
+        baseURL: 'https://card-backend-8pxf.onrender.com'
       });
     } catch (error) {
       console.error('Error saving user to backend:', error);
