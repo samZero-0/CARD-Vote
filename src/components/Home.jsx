@@ -454,13 +454,13 @@ const Home = () => {
             <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-r from-green-400 to-emerald-500 rounded-full mb-6">
               <Check className="text-white" size={40} />
             </div>
-            <h2 className="text-3xl font-bold text-gray-800 mb-4">All Votes Submitted!</h2>
+            <h2 className="text-3xl font-bold text-gray-800 mb-4"> Vote Submitted!</h2>
             <p className="text-gray-600 text-lg max-w-md mx-auto">
-              Thank you for participating in the CARD 2025 - 3 Minute Thesis voting. Your votes have been recorded.
+              Your votes have been recorded.
             </p>
             <div className="mt-8 p-6 bg-gradient-to-r from-green-50 to-emerald-50 rounded-2xl max-w-md mx-auto">
-              <div className="text-2xl font-bold text-green-600 mb-2">{totalVotes} / {totalEnabledParticipants}</div>
-              <div className="text-sm text-green-700">Votes Successfully Submitted</div>
+              {/* <div className="text-2xl font-bold text-green-600 mb-2">{totalVotes} / {totalEnabledParticipants}</div> */}
+              <div className="text-sm text-green-700">Wait for next participant!</div>
             </div>
           </div>
         )}
