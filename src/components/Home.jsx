@@ -55,7 +55,7 @@ const VotingCard = ({ participant, index, onSubmit, hasVoted, currentUser }) => 
       }
     } catch (error) {
       console.error('Error submitting vote:', error);
-      setError(error.response?.data?.message || 'Failed to submit vote. Please try again.');
+      setError(error.response?.data?.message || 'Failed to submit vote. Please Check Your Connection.');
       setIsSubmitting(false);
     }
   };
@@ -327,7 +327,7 @@ const Home = () => {
 
     } catch (error) {
       console.error('Error fetching participants:', error);
-      setError('Failed to load participants. Please refresh the page.');
+      setError('Check Your Internet Connection and Try Again');
     } finally {
       setLoading(false);
     }
