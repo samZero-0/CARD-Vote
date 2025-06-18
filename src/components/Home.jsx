@@ -466,7 +466,7 @@ const Home = () => {
         )}
       </div>
 
-      <div className="bg-white/50 mt-56 md:mt-80 backdrop-blur-sm border-t border-gray-200">
+      <div className="bg-white/50 mt-28 md:mt-80 backdrop-blur-sm border-t border-gray-200">
   <div className="container mx-auto px-4 py-6 text-center">
     <div className="flex items-center justify-center space-x-2 text-gray-500 mb-2">
       <Code size={16} />
