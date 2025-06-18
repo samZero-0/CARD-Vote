@@ -43,10 +43,22 @@ const AdminPanel = () => {
     };
 
     const toggleParticipant = (participantId) => {
-        setParticipantSettings(prev => ({
-            ...prev,
-            [participantId]: !prev[participantId]
-        }));
+        const isCurrentlyEnabled = participantSettings[participantId];
+        
+        if (isCurrentlyEnabled) {
+            // If currently enabled, disable it
+            setParticipantSettings(prev => ({
+                ...prev,
+                [participantId]: false
+            }));
+        } else {
+            // If currently disabled, enable it and disable all others
+            const newSettings = {};
+            participants.forEach(participant => {
+                newSettings[participant.id] = participant.id === participantId;
+            });
+            setParticipantSettings(newSettings);
+        }
     };
 
     const saveSettings = async () => {
@@ -105,7 +117,7 @@ const AdminPanel = () => {
 
     return (
         <div className="min-h-screen bg-gray-50">
-            
+            {/* <Toaster position="top-right" /> */}
 
             <div className="max-w-6xl mx-auto px-6 py-12">
                 {/* Header */}
