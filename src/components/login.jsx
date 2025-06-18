@@ -34,7 +34,7 @@ const Login = () => {
                 };
     
                 try {
-                    const response = await fetch('http://localhost:5000/users', {
+                    const response = await fetch('https://card-backend-three.vercel.app/users', {
                         method: 'POST',
                         headers: {
                             'content-type': 'application/json'

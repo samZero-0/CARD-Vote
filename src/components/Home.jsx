@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Check, X, Users, BarChart3, TrendingUp, AlertCircle } from 'lucide-react';
 import axios from 'axios';
 
-const API_BASE_URL = 'http://localhost:5000/api';
+const API_BASE_URL = 'https://card-backend-three.vercel.app/api';
 // const API_BASE_URL = 'https://card-backend.vercel.app/api';
 axios.defaults.baseURL = API_BASE_URL;
 

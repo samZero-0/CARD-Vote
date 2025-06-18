@@ -11,7 +11,7 @@ const AdminPanel = () => {
     const [stats, setStats] = useState(null);
 
     // Mock API base URL - replace with your actual API
-    const API_BASE_URL = 'http://localhost:5000/api';
+    const API_BASE_URL = 'https://card-backend-three.vercel.app/api';
 
     const fetchParticipants = async () => {
         try {

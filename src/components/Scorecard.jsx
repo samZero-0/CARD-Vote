@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Trophy, Medal, Award, TrendingUp, Users, BarChart3, Star, Crown, Target } from 'lucide-react';
 
-const API_BASE_URL = 'http://localhost:5000/api';
+const API_BASE_URL = 'https://card-backend-three.vercel.app/api';
 
 const Scorecard = () => {
   const [results, setResults] = useState([]);
