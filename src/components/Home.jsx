@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Check, X, Users, BarChart3, TrendingUp, AlertCircle } from 'lucide-react';
+import { Check, X,Code , Users, BarChart3, TrendingUp, AlertCircle } from 'lucide-react';
 import axios from 'axios';
 
 const API_BASE_URL = 'https://card-backend-three.vercel.app/api';
@@ -467,22 +467,36 @@ const Home = () => {
       </div>
 
       <div className="bg-white/50 mt-56 md:mt-80 backdrop-blur-sm border-t border-gray-200">
-        <div className="container mx-auto px-4 py-8">
-          <div className="flex items-center justify-center space-x-2 text-gray-500">
-            <TrendingUp size={16} />
-            <span className="text-sm font-semibold">
-
-              <span className="text-green-600">
-                Mekat
-              </span>
-              &
-              <span className="text-blue-600">
-                Samin
-              </span>
-            </span>
-          </div>
-        </div>
-      </div>
+  <div className="container mx-auto px-4 py-6 text-center">
+    <div className="flex items-center justify-center space-x-2 text-gray-500 mb-2">
+      <Code size={16} />
+      <p className="text-sm">
+        Powered by{' '}
+        <a
+          href="https://github.com/phanthom-Mekat"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="font-semibold underline text-green-600 hover:underline transition-colors"
+        >
+          Mekat
+        </a>
+        {' & '}
+        <a
+          href="https://github.com/samZero-0"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="font-semibold underline text-blue-600 hover:underline transition-colors"
+        >
+          Samin
+        </a>
+      </p>
+    </div>
+    <p className="text-xs text-gray-500">
+      Department of Computer Science and Engineering, IUB
+    </p>
+    
+  </div>
+</div>
     </div>
   );
 };

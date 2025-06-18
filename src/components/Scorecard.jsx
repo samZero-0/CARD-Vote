@@ -220,7 +220,7 @@ const Scorecard = () => {
 
         {/* Results Table */}
         <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl overflow-hidden">
-          <div className="p-6 border-b border-gray-200">
+          <div className="md:p-6 p-2 border-b border-gray-200">
             <h2 className="text-2xl font-bold text-gray-800 flex items-center space-x-2">
               <Trophy className="text-yellow-500" size={28} />
               <span>Competition Results</span>
@@ -259,7 +259,7 @@ const Scorecard = () => {
                   </div>
                   
                   {/* Scores */}
-                  <div className="flex items-center space-x-8">
+                  <div className="flex items-center md:space-x-8 space-x-2">
                     <div className="text-center">
                       <div className="text-lg font-bold text-gray-800">{participant.weightedScore}</div>
                       <div className="text-xs text-gray-500">Weighted Score</div>
@@ -289,7 +289,7 @@ const Scorecard = () => {
                   </div>
                   
                   {/* Progress Bar */}
-                  <div className="w-32 ml-6">
+                  <div className="hidden md:block w-32 ml-6">
                     <div className="w-full bg-gray-200 rounded-full h-2">
                       <div
                         className={`h-2 rounded-full bg-gradient-to-r ${getProgressBarColor(participant.rank)} transition-all duration-500`}
