@@ -31,10 +31,10 @@ const VotingCard = ({ participant, index, onSubmit, hasVoted, currentUser }) => 
 
   const handleSubmit = async () => {
     if (!vote || !likertScale || !currentUser) return;
-    
+
     setIsSubmitting(true);
     setError(null);
-    
+
     try {
       const voteData = {
         voterId: currentUser.id,
@@ -47,7 +47,7 @@ const VotingCard = ({ participant, index, onSubmit, hasVoted, currentUser }) => 
       };
 
       const response = await axios.post('/votes', voteData);
-      
+
       if (response.status === 201) {
         setTimeout(() => {
           onSubmit(participant.id, { vote, intensity: likertScale });
@@ -63,72 +63,72 @@ const VotingCard = ({ participant, index, onSubmit, hasVoted, currentUser }) => 
   const getIntensityColor = (value, voteType) => {
     if (voteType === 'yes') {
       return value === 1 ? 'from-emerald-400 to-green-500' :
-             value === 2 ? 'from-green-500 to-emerald-600' :
-             'from-green-600 to-emerald-700';
+        value === 2 ? 'from-green-500 to-emerald-600' :
+          'from-green-600 to-emerald-700';
     } else {
       return value === 1 ? 'from-red-400 to-rose-500' :
-             value === 2 ? 'from-red-500 to-rose-600' :
-             'from-red-600 to-rose-700';
+        value === 2 ? 'from-red-500 to-rose-600' :
+          'from-red-600 to-rose-700';
     }
   };
 
   if (hasVoted) return null;
 
   return (
-    <div 
+    <div
       className="group relative bg-white shadow-xl rounded-2xl overflow-hidden transition-all duration-500 hover:shadow-2xl hover:-translate-y-1"
       style={{ animationDelay: `${index * 100}ms` }}
     >
       <div className="absolute inset-0 bg-gradient-to-br from-blue-50/50 to-purple-50/50 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-      
+
       {vote && (
-        <div className={`absolute top-0 right-0 w-16 h-16 ${
-          vote === 'yes' ? 'bg-gradient-to-br from-green-400 to-emerald-500' : 'bg-gradient-to-br from-red-400 to-rose-500'
-        } transform rotate-45 translate-x-8 -translate-y-8 transition-all duration-300`}>
+        <div className={`absolute top-0 right-0 w-16 h-16 ${vote === 'yes' ? 'bg-gradient-to-br from-green-400 to-emerald-500' : 'bg-gradient-to-br from-red-400 to-rose-500'
+          } transform rotate-45 translate-x-8 -translate-y-8 transition-all duration-300`}>
           <div className="absolute bottom-2 left-2 text-white">
             {vote === 'yes' ? <Check size={12} /> : <X size={12} />}
           </div>
         </div>
       )}
-      
+
       <div className="relative z-10">
-        <div className="flex items-center p-8">
-          <div className="relative">
-            <img
-              className="h-20 w-20 rounded-full object-cover ring-4 ring-white shadow-lg transition-transform duration-300 group-hover:scale-105"
-              src={participant.avatar}
-              alt={`${participant.name}'s avatar`}
-            />
-            <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center">
-              <div className="w-3 h-3 bg-white rounded-full"></div>
+        <div className="flex items-center md:p-8 p-2">
+          <div className="flex  md:flex-row flex-col items-center space-y-2 " >
+            <div className="relative">
+              <img
+                className="h-20 w-20 rounded-full object-cover ring-4 ring-white shadow-lg transition-transform duration-300 group-hover:scale-105"
+                src={participant.avatar}
+                alt={`${participant.name}'s avatar`}
+              />
+              <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center">
+                <div className="w-3 h-3 bg-white rounded-full"></div>
+              </div>
+            </div>
+            <div className="ml-6 flex-grow">
+              <h3 className="text-xl font-bold text-blue-900 group-hover:text-gray-900 transition-colors">
+                {participant.name}
+              </h3>
+              <p className="text-gray-600  font-semibold">{participant.role}</p>
+              <div className="flex items-center mt-2 text-sm text-gray-500">
+                <Users size={14} className="mr-1" />
+                <span>ID: {participant.id}</span>
+              </div>
             </div>
           </div>
-          <div className="ml-6 flex-grow">
-            <h3 className="text-xl font-bold text-gray-800 group-hover:text-gray-900 transition-colors">
-              {participant.name}
-            </h3>
-            <p className="text-gray-600 font-medium">{participant.role}</p>
-            <div className="flex items-center mt-2 text-sm text-gray-500">
-              <Users size={14} className="mr-1" />
-              <span>ID: {participant.id}</span>
-            </div>
-          </div>
-          
+
+
           <div className="flex flex-col items-center">
             {vote && likertScale ? (
               <div className="flex flex-col items-center">
-                <div className={`w-12 h-12 rounded-full bg-gradient-to-r ${
-                  vote === 'yes' ? 'from-green-400 to-emerald-500' : 'from-red-400 to-rose-500'
-                } flex items-center justify-center text-white font-bold shadow-lg`}>
+                <div className={`w-12 h-12 rounded-full bg-gradient-to-r ${vote === 'yes' ? 'from-green-400 to-emerald-500' : 'from-red-400 to-rose-500'
+                  } flex items-center justify-center text-white font-bold shadow-lg`}>
                   {likertScale}
                 </div>
                 <span className="text-xs text-gray-500 mt-1">Ready</span>
               </div>
             ) : vote ? (
               <div className="flex flex-col items-center">
-                <div className={`w-8 h-8 rounded-full ${
-                  vote === 'yes' ? 'bg-green-100 text-green-600' : 'bg-red-100 text-red-600'
-                } flex items-center justify-center`}>
+                <div className={`w-8 h-8 rounded-full ${vote === 'yes' ? 'bg-green-100 text-green-600' : 'bg-red-100 text-red-600'
+                  } flex items-center justify-center`}>
                   {vote === 'yes' ? <Check size={16} /> : <X size={16} />}
                 </div>
                 <span className="text-xs text-gray-500 mt-1">Pending</span>
@@ -143,7 +143,7 @@ const VotingCard = ({ participant, index, onSubmit, hasVoted, currentUser }) => 
             )}
           </div>
         </div>
-        
+
         {error && (
           <div className="mx-8 mb-4 p-4 bg-red-50 border border-red-200 rounded-lg">
             <div className="flex items-center space-x-2 text-red-600">
@@ -152,17 +152,16 @@ const VotingCard = ({ participant, index, onSubmit, hasVoted, currentUser }) => 
             </div>
           </div>
         )}
-        
+
         <div className="px-8 pb-6">
           <div className="flex space-x-4">
             <button
               onClick={() => handleVote('yes')}
               disabled={isSubmitting}
-              className={`flex-1 py-4 px-6 rounded-xl font-semibold transition-all duration-300 transform hover:scale-105 active:scale-95 ${
-                vote === 'yes'
+              className={`flex-1 py-4 px-6 rounded-xl font-semibold transition-all duration-300 transform hover:scale-105 active:scale-95 ${vote === 'yes'
                   ? 'bg-gradient-to-r from-green-500 to-emerald-600 text-white shadow-lg shadow-green-200'
                   : 'bg-gradient-to-r from-gray-100 to-gray-200 text-gray-700 hover:from-green-50 hover:to-emerald-50 hover:text-green-700 hover:shadow-md'
-              } ${isAnimating && vote === 'yes' ? 'animate-pulse' : ''} ${isSubmitting ? 'opacity-50 cursor-not-allowed' : ''}`}
+                } ${isAnimating && vote === 'yes' ? 'animate-pulse' : ''} ${isSubmitting ? 'opacity-50 cursor-not-allowed' : ''}`}
             >
               <div className="flex items-center justify-center space-x-2">
                 <Check size={18} />
@@ -172,11 +171,10 @@ const VotingCard = ({ participant, index, onSubmit, hasVoted, currentUser }) => 
             <button
               onClick={() => handleVote('no')}
               disabled={isSubmitting}
-              className={`flex-1 py-4 px-6 rounded-xl font-semibold transition-all duration-300 transform hover:scale-105 active:scale-95 ${
-                vote === 'no'
+              className={`flex-1 py-4 px-6 rounded-xl font-semibold transition-all duration-300 transform hover:scale-105 active:scale-95 ${vote === 'no'
                   ? 'bg-gradient-to-r from-red-500 to-rose-600 text-white shadow-lg shadow-red-200'
                   : 'bg-gradient-to-r from-gray-100 to-gray-200 text-gray-700 hover:from-red-50 hover:to-rose-50 hover:text-red-700 hover:shadow-md'
-              } ${isAnimating && vote === 'no' ? 'animate-pulse' : ''} ${isSubmitting ? 'opacity-50 cursor-not-allowed' : ''}`}
+                } ${isAnimating && vote === 'no' ? 'animate-pulse' : ''} ${isSubmitting ? 'opacity-50 cursor-not-allowed' : ''}`}
             >
               <div className="flex items-center justify-center space-x-2">
                 <X size={18} />
@@ -194,23 +192,21 @@ const VotingCard = ({ participant, index, onSubmit, hasVoted, currentUser }) => 
               </p>
               <div className="w-16 h-1 bg-gradient-to-r from-blue-400 to-purple-500 rounded-full mx-auto"></div>
             </div>
-            
+
             <div className="grid grid-cols-3 gap-3">
               {[1, 2, 3].map((value) => (
                 <button
                   key={value}
                   onClick={() => handleLikertChange(value)}
                   disabled={isSubmitting}
-                  className={`relative overflow-hidden py-4 px-3 rounded-xl font-medium transition-all duration-300 transform hover:scale-105 active:scale-95 ${
-                    likertScale === value
+                  className={`relative overflow-hidden py-4 px-3 rounded-xl font-medium transition-all duration-300 transform hover:scale-105 active:scale-95 ${likertScale === value
                       ? `bg-gradient-to-r ${getIntensityColor(value, vote)} text-white shadow-lg`
                       : 'bg-gray-50 text-gray-700 hover:bg-gray-100 hover:shadow-md'
-                  } ${isSubmitting ? 'opacity-50 cursor-not-allowed' : ''}`}
+                    } ${isSubmitting ? 'opacity-50 cursor-not-allowed' : ''}`}
                 >
                   <div className="relative z-10 text-center">
-                    <div className={`text-2xl font-bold mb-1 ${
-                      likertScale === value ? 'text-white' : 'text-green-600'
-                    }`}>
+                    <div className={`text-2xl font-bold mb-1 ${likertScale === value ? 'text-white' : 'text-green-600'
+                      }`}>
                       {value}
                     </div>
                     <div className="text-xs leading-tight">
@@ -219,23 +215,22 @@ const VotingCard = ({ participant, index, onSubmit, hasVoted, currentUser }) => 
                       {value === 3 && 'Strongly agree'}
                     </div>
                   </div>
-                  
+
                   {likertScale === value && (
                     <div className="absolute inset-0 bg-white opacity-20 animate-pulse"></div>
                   )}
                 </button>
               ))}
             </div>
-            
+
             <div className="mt-6 pt-4 border-t border-gray-100">
               <button
                 onClick={handleSubmit}
                 disabled={!vote || !likertScale || isSubmitting}
-                className={`w-full py-4 px-6 rounded-xl font-semibold transition-all duration-300 transform ${
-                  !vote || !likertScale || isSubmitting
+                className={`w-full py-4 px-6 rounded-xl font-semibold transition-all duration-300 transform ${!vote || !likertScale || isSubmitting
                     ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
                     : 'bg-gradient-to-r from-blue-500 to-purple-600 text-white hover:from-blue-600 hover:to-purple-700 hover:scale-105 active:scale-95 shadow-lg hover:shadow-xl'
-                }`}
+                  }`}
               >
                 {isSubmitting ? (
                   <div className="flex items-center justify-center space-x-2">
@@ -266,16 +261,15 @@ const VotingCard = ({ participant, index, onSubmit, hasVoted, currentUser }) => 
                 Ready to submit your disagreement
               </p>
             </div> */}
-            
+
             <div className="mt-4">
               <button
                 onClick={handleSubmit}
                 disabled={isSubmitting}
-                className={`w-full py-4 px-6 rounded-xl font-semibold transition-all duration-300 transform ${
-                  isSubmitting
+                className={`w-full py-4 px-6 rounded-xl font-semibold transition-all duration-300 transform ${isSubmitting
                     ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
                     : 'bg-gradient-to-r from-red-500 to-rose-600 text-white hover:from-red-600 hover:to-rose-700 hover:scale-105 active:scale-95 shadow-lg hover:shadow-xl'
-                }`}
+                  }`}
               >
                 {isSubmitting ? (
                   <div className="flex items-center justify-center space-x-2">
@@ -304,7 +298,7 @@ const Home = () => {
   const [totalVotes, setTotalVotes] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  
+
   // Mock user data - you can replace this with your own user management
   const currentUser = {
     id: 'user_' + Math.random().toString(36).substr(2, 9),
@@ -317,20 +311,20 @@ const Home = () => {
     try {
       setLoading(true);
       setError(null);
-      
+
       // This endpoint now automatically filters based on admin visibility settings
       const response = await axios.get(`/participants/available/${currentUser.id}`);
       const participants = response.data;
-      
+
       setAvailableParticipants(participants);
-      
+
       const userVotesResponse = await axios.get(`/votes/user/${currentUser.id}`);
       const userVotes = userVotesResponse.data;
-      
+
       const votedIds = new Set(userVotes.map(vote => vote.participantId));
       setVotedParticipants(votedIds);
       setTotalVotes(userVotes.length);
-      
+
     } catch (error) {
       console.error('Error fetching participants:', error);
       setError('Failed to load participants. Please refresh the page.');
@@ -342,7 +336,7 @@ const Home = () => {
   const handleUserSubmit = (participantId, voteData) => {
     setVotedParticipants(prev => new Set([...prev, participantId]));
     setTotalVotes(prev => prev + 1);
-    setAvailableParticipants(prev => 
+    setAvailableParticipants(prev =>
       prev.filter(participant => participant.id !== participantId)
     );
   };
@@ -355,7 +349,7 @@ const Home = () => {
 
   const [totalEnabledParticipants, setTotalEnabledParticipants] = useState(8);
   const completionPercentage = Math.round((totalVotes / totalEnabledParticipants) * 100);
-  
+
   const fetchTotalEnabledCount = async () => {
     try {
       const response = await axios.get('/admin/enabled-participants');
@@ -413,7 +407,7 @@ const Home = () => {
             </p>
           </div>
         </div>
-        
+
         {/* <div className="flex items-center justify-center space-x-4">
           <div className="flex items-center space-x-2 bg-white/80 backdrop-blur-sm px-4 py-2 rounded-full shadow-sm">
             <img 
@@ -424,7 +418,7 @@ const Home = () => {
             <span className="font-medium text-gray-700">{currentUser.name}</span>
           </div>
         </div> */}
-        
+
         {/* <div className="bg-white/80 backdrop-blur-sm px-6 py-3 rounded-full shadow-sm">
           <div className="flex items-center space-x-3">
             <span className="text-sm font-medium text-gray-600">Your Progress:</span>
@@ -442,14 +436,13 @@ const Home = () => {
 
       <div className="container mx-auto px-4 pb-12">
         {availableParticipants.length > 0 ? (
-          <div className={`grid gap-8 transition-all duration-1000 ${
-            mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
-          }`}>
+          <div className={`grid gap-8 transition-all duration-1000 ${mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
+            }`}>
             {availableParticipants.map((participant, index) => (
-              <VotingCard 
-                key={participant.id} 
-                participant={participant} 
-                index={index} 
+              <VotingCard
+                key={participant.id}
+                participant={participant}
+                index={index}
                 onSubmit={handleUserSubmit}
                 hasVoted={votedParticipants.has(participant.id)}
                 currentUser={currentUser}
@@ -466,7 +459,7 @@ const Home = () => {
               Thank you for participating in the CARD 2025 - 3 Minute Thesis voting. Your votes have been recorded.
             </p>
             <div className="mt-8 p-6 bg-gradient-to-r from-green-50 to-emerald-50 rounded-2xl max-w-md mx-auto">
-            <div className="text-2xl font-bold text-green-600 mb-2">{totalVotes} / {totalEnabledParticipants}</div>
+              <div className="text-2xl font-bold text-green-600 mb-2">{totalVotes} / {totalEnabledParticipants}</div>
               <div className="text-sm text-green-700">Votes Successfully Submitted</div>
             </div>
           </div>
@@ -478,13 +471,13 @@ const Home = () => {
           <div className="flex items-center justify-center space-x-2 text-gray-500">
             <TrendingUp size={16} />
             <span className="text-sm font-semibold">
-              
+
               <span className="text-green-600">
-                Mekat  
+                Mekat
               </span>
               &
               <span className="text-blue-600">
-                Samin 
+                Samin
               </span>
             </span>
           </div>
