@@ -51,7 +51,7 @@ const VotingCard = ({ participant, index, onSubmit, hasVoted, currentUser }) => 
       if (response.status === 201) {
         setTimeout(() => {
           onSubmit(participant.id, { vote, intensity: likertScale });
-        }, 500);
+        }, 5000);
       }
     } catch (error) {
       console.error('Error submitting vote:', error);
@@ -306,12 +306,12 @@ const Home = () => {
     email: 'voter@example.com',
     photoURL: 'https://randomuser.me/api/portraits/men/1.jpg'
   };
-
+  const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
   const fetchAvailableParticipants = async () => {
     try {
       setLoading(true);
       setError(null);
-
+      await sleep(1000);
       // This endpoint now automatically filters based on admin visibility settings
       const response = await axios.get(`/participants/available/${currentUser.id}`);
       const participants = response.data;
