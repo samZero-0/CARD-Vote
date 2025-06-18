@@ -1,9 +1,8 @@
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Check, X, Users, BarChart3, TrendingUp, AlertCircle } from 'lucide-react';
 import axios from 'axios';
-import { AuthContext } from '../provider/AuthProvider';
 
-const API_BASE_URL = 'https://card-backend-8pxf.onrender.com/api';
+const API_BASE_URL = 'http://localhost:5000/api';
 // const API_BASE_URL = 'https://card-backend.vercel.app/api';
 axios.defaults.baseURL = API_BASE_URL;
 
@@ -38,8 +37,8 @@ const VotingCard = ({ participant, index, onSubmit, hasVoted, currentUser }) => 
     
     try {
       const voteData = {
-        voterId: currentUser.uid,
-        voterName: currentUser.displayName || currentUser.name,
+        voterId: currentUser.id,
+        voterName: currentUser.name,
         voterEmail: currentUser.email,
         participantId: participant.id,
         participantName: participant.name,
@@ -306,39 +305,26 @@ const Home = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   
-  const { user: authUser, loading: authLoading } = useContext(AuthContext);
-
-  const saveUserToBackend = async (user) => {
-    try {
-      const userData = {
-        name: user.displayName || user.name,
-        email: user.email,
-        photo: user.photoURL || null,
-        role: "student",
-        uid: user.uid
-      };
-
-      await axios.post('/users', userData, {
-        baseURL: 'https://card-backend-8pxf.onrender.com'
-      });
-    } catch (error) {
-      console.error('Error saving user to backend:', error);
-    }
+  // Mock user data - you can replace this with your own user management
+  const currentUser = {
+    id: 'user_' + Math.random().toString(36).substr(2, 9),
+    name: 'Mekat',
+    email: 'voter@example.com',
+    photoURL: 'https://randomuser.me/api/portraits/men/1.jpg'
   };
 
   const fetchAvailableParticipants = async () => {
-    if (!authUser) return;
-    
     try {
       setLoading(true);
       setError(null);
       
-      const response = await axios.get(`/participants/available/${authUser.uid}`);
+      // This endpoint now automatically filters based on admin visibility settings
+      const response = await axios.get(`/participants/available/${currentUser.id}`);
       const participants = response.data;
       
       setAvailableParticipants(participants);
       
-      const userVotesResponse = await axios.get(`/votes/user/${authUser.uid}`);
+      const userVotesResponse = await axios.get(`/votes/user/${currentUser.id}`);
       const userVotes = userVotesResponse.data;
       
       const votedIds = new Set(userVotes.map(vote => vote.participantId));
@@ -363,47 +349,29 @@ const Home = () => {
 
   useEffect(() => {
     setMounted(true);
+    fetchAvailableParticipants();
+    fetchTotalEnabledCount();
   }, []);
 
-  useEffect(() => {
-    if (!authLoading && authUser) {
-      saveUserToBackend(authUser).then(() => {
-        fetchAvailableParticipants();
-      });
-    } else if (!authLoading && !authUser) {
-      setLoading(false);
+  const [totalEnabledParticipants, setTotalEnabledParticipants] = useState(8);
+  const completionPercentage = Math.round((totalVotes / totalEnabledParticipants) * 100);
+  
+  const fetchTotalEnabledCount = async () => {
+    try {
+      const response = await axios.get('/admin/enabled-participants');
+      setTotalEnabledParticipants(response.data.totalEnabled);
+    } catch (error) {
+      console.error('Error fetching enabled participants count:', error);
+      // Fallback to default if error
+      setTotalEnabledParticipants(8);
     }
-  }, [authLoading, authUser]);
-
-  const totalParticipants = 8;
-  const completionPercentage = Math.round((totalVotes / totalParticipants) * 100);
-
-  if (authLoading || loading) {
+  };
+  if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 flex items-center justify-center">
         <div className="text-center">
           <div className="w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
           <p className="text-gray-600 text-lg">Loading voting data...</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (!authUser) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 flex items-center justify-center">
-        <div className="text-center max-w-md mx-auto p-8">
-          <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
-            <AlertCircle className="text-red-600" size={32} />
-          </div>
-          <h2 className="text-2xl font-bold text-gray-800 mb-4">Authentication Required</h2>
-          <p className="text-gray-600 mb-6">Please sign in to access the voting system.</p>
-          <button
-            onClick={() => window.location.href = '/login'}
-            className="bg-gradient-to-r from-blue-500 to-purple-600 text-white px-6 py-3 rounded-lg font-semibold hover:from-blue-600 hover:to-purple-700 transition-all duration-300"
-          >
-            Sign In
-          </button>
         </div>
       </div>
     );
@@ -447,18 +415,18 @@ const Home = () => {
             <div className="flex items-center justify-center space-x-4">
               <div className="flex items-center space-x-2 bg-white/80 backdrop-blur-sm px-4 py-2 rounded-full shadow-sm">
                 <img 
-                  src={authUser.photoURL || 'https://randomuser.me/api/portraits/men/1.jpg'} 
+                  src={currentUser.photoURL} 
                   alt="User avatar" 
                   className="w-8 h-8 rounded-full"
                 />
-                <span className="font-medium text-gray-700">{authUser.displayName || 'User'}</span>
+                <span className="font-medium text-gray-700">{currentUser.name}</span>
               </div>
             </div>
             
             <div className="bg-white/80 backdrop-blur-sm px-6 py-3 rounded-full shadow-sm">
               <div className="flex items-center space-x-3">
                 <span className="text-sm font-medium text-gray-600">Your Progress:</span>
-                <span className="text-lg font-bold text-blue-600">{totalVotes}/{totalParticipants}</span>
+                <span className="text-lg font-bold text-blue-600">{totalVotes}/{totalEnabledParticipants}</span>
                 <div className="w-24 h-2 bg-gray-200 rounded-full overflow-hidden">
                   <div 
                     className="h-full bg-gradient-to-r from-green-400 to-blue-500 transition-all duration-500"
@@ -484,7 +452,7 @@ const Home = () => {
                 index={index} 
                 onSubmit={handleUserSubmit}
                 hasVoted={votedParticipants.has(participant.id)}
-                currentUser={authUser}
+                currentUser={currentUser}
               />
             ))}
           </div>
@@ -498,7 +466,7 @@ const Home = () => {
               Thank you for participating in the CARD 2025 - 3 Minute Thesis voting. Your votes have been recorded.
             </p>
             <div className="mt-8 p-6 bg-gradient-to-r from-green-50 to-emerald-50 rounded-2xl max-w-md mx-auto">
-              <div className="text-2xl font-bold text-green-600 mb-2">{totalVotes} / {totalParticipants}</div>
+            <div className="text-2xl font-bold text-green-600 mb-2">{totalVotes} / {totalEnabledParticipants}</div>
               <div className="text-sm text-green-700">Votes Successfully Submitted</div>
             </div>
           </div>
@@ -509,7 +477,16 @@ const Home = () => {
         <div className="container mx-auto px-4 py-8">
           <div className="flex items-center justify-center space-x-2 text-gray-500">
             <TrendingUp size={16} />
-            <span className="text-sm">Real-time voting • Secure • Persistent</span>
+            <span className="text-sm font-semibold">
+              
+              <span className="text-green-600">
+                Mekat  
+              </span>
+              &
+              <span className="text-blue-600">
+                Samin 
+              </span>
+            </span>
           </div>
         </div>
       </div>
